@@ -2,9 +2,15 @@ services:
   bitcoind:
     build: ./bitcoind
     container_name: bitcoind-signer
+    volumes:
+      - bitcoind-data:/root/.bitcoin
+      - ./bitcoind/bitcoin.conf:/root/.bitcoin/bitcoin.conf:ro
 
   nginx:
     build: ./nginx
     container_name: bitcoin-proxy
     ports:
       - "8332:8332"
+
+volumes:
+  bitcoind-data:
