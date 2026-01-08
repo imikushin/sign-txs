@@ -64,6 +64,68 @@ export BITCOIND_CONTAINER=abc123
 sign-txs txs.json > signed.json
 ```
 
+## Setup
+
+The [`containers/`](containers/) directory provides Docker configurations for both the nginx proxy and bitcoind signer. To run both services:
+
+```sh
+cd containers
+docker compose up -d
+```
+
+Then create a wallet:
+
+```sh
+docker exec -it bitcoind-signer bitcoin-cli createwallet "signing-wallet"
+```
+
+You can use the wallet as the signing wallet now.
+
+### Connecting bitcoin-cli to a Remote Node
+
+To use `bitcoin-cli` with a remote Bitcoin node (such as QuickNode), you can set up an nginx reverse proxy. This allows `bitcoin-cli` to connect to a local port that forwards requests to the remote node.
+
+The [`containers/nginx/`](containers/nginx/) directory contains a Dockerfile and configuration for the proxy. Edit `bitcoin-proxy.conf` to replace the placeholder values with your QuickNode endpoint subdomain and API token, then build and run:
+
+```sh
+docker build -t bitcoin-proxy containers/nginx/
+docker run -d --name bitcoin-proxy -p 8332:8332 bitcoin-proxy
+```
+
+Now `bitcoin-cli` can connect to the remote node:
+
+```sh
+bitcoin-cli -rpcconnect=127.0.0.1 -rpcport=8332 getblockcount
+```
+
+### Running bitcoind in a Docker Container
+
+For signing transactions, you need a bitcoind instance with a wallet. This can run in offline mode (no network connections) for security.
+
+The [`containers/bitcoind/`](containers/bitcoind/) directory contains a ready-to-use Dockerfile and bitcoin.conf for an offline signing container.
+
+Build and run the container:
+
+```sh
+# Build the image
+docker build -t bitcoind-signer containers/bitcoind/
+
+# Run the container
+docker run -d --name bitcoind-signer bitcoind-signer
+
+# Create or load a wallet
+docker exec -it bitcoind-signer bitcoin-cli createwallet "signing-wallet"
+
+# Import your private keys or descriptors
+docker exec -it bitcoind-signer bitcoin-cli importdescriptors '[...]'
+```
+
+Use the container name with sign-txs:
+
+```sh
+sign-txs --bitcoind-container bitcoind-signer txs.json > signed.json
+```
+
 ## License
 
 MIT

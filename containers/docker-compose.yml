@@ -1,0 +1,10 @@
+services:
+  bitcoind:
+    build: ./bitcoind
+    container_name: bitcoind-signer
+
+  nginx:
+    build: ./nginx
+    container_name: bitcoin-proxy
+    ports:
+      - "8332:8332"
