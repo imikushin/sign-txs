@@ -11,6 +11,9 @@ services:
     container_name: bitcoin-proxy
     ports:
       - "8332:8332"
+    environment:
+      - PROXY_PASS_URL=${PROXY_PASS_URL}
+      - PROXY_HOST=${PROXY_HOST}
 
 volumes:
   bitcoind-data:

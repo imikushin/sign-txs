@@ -66,10 +66,12 @@ sign-txs txs.json > signed.json
 
 ## Setup
 
-The [`containers/`](containers/) directory provides Docker configurations for both the nginx proxy and bitcoind signer. To run both services:
+The [`containers/`](containers/) directory provides Docker configurations for both the nginx proxy and bitcoind signer. Configure and run both services:
 
 ```sh
 cd containers
+cp .env.example .env
+# Edit .env with your QuickNode endpoint URL and host
 docker compose up -d
 ```
 
@@ -85,12 +87,17 @@ You can use the wallet as the signing wallet now.
 
 To use `bitcoin-cli` with a remote Bitcoin node (such as QuickNode), you can set up an nginx reverse proxy. This allows `bitcoin-cli` to connect to a local port that forwards requests to the remote node.
 
-The [`containers/nginx/`](containers/nginx/) directory contains a Dockerfile and configuration for the proxy. Edit `bitcoin-proxy.conf` to replace the placeholder values with your QuickNode endpoint subdomain and API token, then build and run:
+The [`containers/nginx/`](containers/nginx/) directory contains a Dockerfile and configuration template for the proxy. Configure it via environment variables:
 
 ```sh
 docker build -t bitcoin-proxy containers/nginx/
-docker run -d --name bitcoin-proxy -p 8332:8332 bitcoin-proxy
+docker run -d --name bitcoin-proxy -p 8332:8332 \
+  -e PROXY_PASS_URL=https://xxx-xxxxx-xxxx.btc.quiknode.pro/ACCESS_TOKEN/ \
+  -e PROXY_HOST=xxx-xxxxx-xxxx.btc.quiknode.pro \
+  bitcoin-proxy
 ```
+
+Or create a `.env` file in `containers/` (see `.env.example`) and run `docker compose up -d`.
 
 Now `bitcoin-cli` can connect to the remote node:
 

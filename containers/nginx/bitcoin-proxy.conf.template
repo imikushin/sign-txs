@@ -1,0 +1,9 @@
+server {
+    listen 8332;
+
+    location / {
+        proxy_pass ${PROXY_PASS_URL};
+        proxy_set_header Host ${PROXY_HOST};
+        proxy_ssl_server_name on;
+    }
+}
